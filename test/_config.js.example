@@ -1,0 +1,11 @@
+export var MAKEFILE_NAME = 'Makefile.unix';
+
+export var CLIENT_PATH   = __dirname + '/../src/EmollientCoind';
+
+export var BASE_DATADIR  = '/tmp/';
+
+export var RPC_USER      = 'user';
+export var RPC_PASSWORD  = 'password';
+
+export var BASE_PORT     = 5100;
+export var BASE_RPC_PORT = 6100;

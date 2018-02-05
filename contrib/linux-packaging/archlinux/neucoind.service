@@ -1,0 +1,9 @@
+[Unit]
+Description=EmollientCoin daemon
+After=network.target
+
+[Service]
+ExecStart=EmollientCoind -logtimestamps
+
+[Install]
+WantedBy=default.target

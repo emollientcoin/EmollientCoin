@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=EmollientCoin
+Comment=EmollientCoin P2P Cryptocurrency
+Comment[fr]=EmollientCoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=EmollientCoin, eşten eşe kriptografik sanal para birimi
+Exec=/usr/bin/EmollientCoin-qt
+Terminal=false
+Type=Application
+Icon=/usr/share/pixmaps/EmollientCoin80.xpm
+MimeType=x-scheme-handler/EmollientCoin;
+Categories=Office;

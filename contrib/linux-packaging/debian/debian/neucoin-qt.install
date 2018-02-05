@@ -1,0 +1,6 @@
+debian/bin/EmollientCoin-qt usr/bin
+src/EmollientCoin-qt usr/lib/EmollientCoin
+share/pixmaps/EmollientCoin32.xpm usr/share/pixmaps
+share/pixmaps/EmollientCoin80.xpm usr/share/pixmaps
+debian/EmollientCoin-qt.desktop usr/share/applications
+debian/EmollientCoin-qt.protocol usr/share/kde4/services/

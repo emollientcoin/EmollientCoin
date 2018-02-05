@@ -1,0 +1,6 @@
+EmollientCoin (0.8.0~dfsg-1) stable; urgency=low
+
+  [ Sylvain Laurent ]
+  * Initial release, forking from ppcoin.
+
+ -- Sylvain Laurent <sylvain@EmollientCoin.org>  Wed, 03 Sep 2015 17:00:00 +0200

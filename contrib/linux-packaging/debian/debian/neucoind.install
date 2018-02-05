@@ -1,0 +1,2 @@
+debian/bin/EmollientCoind usr/bin
+src/EmollientCoind usr/lib/EmollientCoin

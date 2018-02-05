@@ -1,0 +1,33 @@
+#!/usr/bin/make -f
+# -*- mode: makefile; coding: utf-8 -*-
+
+#DEB_MAKE_CHECK_TARGET = test_EmollientCoin
+#build/EmollientCoind::
+#	$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),,src/test_EmollientCoin)
+
+DEB_INSTALL_EXAMPLES_EmollientCoind += debian/examples/*
+DEB_INSTALL_MANPAGES_EmollientCoind += debian/manpages/*
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cd share; ./gengraphics.sh svg/EmollientCoin_ico.svg
+	cd src; $(MAKE) -f Makefile.unix EmollientCoind
+	cd src; $(MAKE) -f Makefile.unix EmollientCoin-qt
+
+override_dh_auto_clean:
+	cd src; $(MAKE) -f Makefile.unix clean
+
+#override_dh_auto_configure:
+#	qmake EmollientCoin-qt.pro USE_QRCODE=1
+
+override_dh_auto_test:
+#	cd src; $(MAKE) -f makefile.unix test_EmollientCoin
+#	src/test_EmollientCoin
+
+# Ensure wrapper is set executable
+binary-post-install/EmollientCoind:
+	chmod +x $(cdbs_curdestdir)usr/bin/EmollientCoind
+binary-post-install/EmollientCoin-qt:
+	chmod +x $(cdbs_curdestdir)usr/bin/EmollientCoin-qt

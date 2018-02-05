@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+umask 077
+
+basedir=~/.EmollientCoin
+dbfile="$basedir/DB_CONFIG"
+cfgfile="$basedir/EmollientCoin.conf"
+
+[ -e "$basedir" ] || mkdir "$basedir"
+
+[ -e "$cfgfile" ] || perl -le 'print"rpcpassword=",map{(a..z,A..Z,0..9)[rand 62]}0..9' > "$cfgfile"
+
+# EmollientCoin does not clean up DB log files by default
+[ -e "$dbfile" ] || echo 'set_flags DB_LOG_AUTOREMOVE' > "$dbfile"
+
+exec /usr/lib/EmollientCoin/EmollientCoind "$@"
