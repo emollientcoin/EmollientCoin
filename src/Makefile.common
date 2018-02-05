@@ -1,0 +1,110 @@
+SHELL     = bash
+
+MD5SUM   ?= md5sum
+CAT      ?= cat
+LRELEASE ?= lrelease
+WINDRES  ?= windres
+MOC      ?= moc
+UIC      ?= uic
+RCC      ?= rcc
+FIND     ?= find
+
+# Custom GNU Make function that reverse a word list
+reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
+
+# Same thing, but also add the "-l" prefix for the linker
+librarify = $(addprefix -l, $(call reverse,$(1)))
+
+ifeq ($(M32),1)
+  LDFLAGS_HEADLESS += -m32
+  LDFLAGS_QT += -m32
+endif
+
+ifeq ($(DEBUG),1)
+  CXXFLAGS += -g -O0
+endif
+
+ifeq ($(TESTING),1)
+  CXXFLAGS += -g -O0 -DTESTING
+endif
+
+default: force $(TARGET_HEADLESS)
+
+ifneq ($(NO_QT),1)
+all: force $(TARGET_HEADLESS) $(TARGET_QT)
+else
+all: force $(TARGET_HEADLESS)
+endif
+
+-include $(DEPENDENCIES_HEADLESS)
+
+ifneq ($(NO_QT),1)
+  -include $(DEPENDENCIES_QT)
+endif
+
+.make.cxxflags: force
+	@HASH=`$(MD5SUM) <<< '$(CXXFLAGS)'`; echo "$$HASH" | cmp -s - $@ || echo "$$HASH" > $@
+
+.make.ldflags: force
+	@HASH=`$(MD5SUM) <<< '$(CONSTANTS) :: $(LDFLAGS_HEADLESS) :: $(LDFLAGS_QT)'`; echo "$$HASH" | cmp -s - $@ || echo "$$HASH" > $@
+
+$(TARGET_HEADLESS): $(OBJECTS_HEADLESS) .make.ldflags
+	$(CXX) -o $@ $(OBJECTS_HEADLESS) $(LDFLAGS_HEADLESS) $(call librarify, $(LIBRARIES_HEADLESS))
+
+build.h: force
+	../contrib/build-versioning/generate-build-version.sh $@
+
+$(TARGET_QT): $(OBJECTS_QT) .make.ldflags
+	$(CXX) -o $@ $(OBJECTS_QT) $(LDFLAGS_QT) $(call librarify, $(LIBRARIES_QT))
+
+%.res: %.rc
+	../contrib/windows-packaging/safe-run.sh $(WINDRES) $< -O coff -o $@
+
+%.qm: %.ts
+	$(LRELEASE) -qm $@ $<
+
+%.qrc.cpp: %.qrc $(filter %.qm, $(SOURCES_QT))
+	$(RCC) -o $@ $< -name bitcoin
+
+%.qt.cpp: %.cpp
+	( echo '#define QT_GUI'; $(CAT) $< ) > $@
+
+%.moc: %.h
+	$(MOC) -o $@ $<
+
+ui_%.h: %.ui
+	$(UIC) -o $@ $<
+
+%.cpp.d: %.cpp | generated_files
+	$(CXX) -MM -MT "${@:.cpp.d=.cpp.o}" -o $@ $< $(CXXFLAGS)
+
+%.cpp.o: %.cpp .make.cxxflags
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+ifneq ($(NO_QT),1)
+generated_files: force \
+	$(join $(dir $(filter %.ui, $(SOURCES_QT))), $(patsubst %.ui, ui_%.h, $(notdir $(filter %.ui, $(SOURCES_QT))))) \
+	$(join $(dir $(filter %.h, $(SOURCES_QT))), $(patsubst %.h, %.moc, $(notdir $(filter %.h, $(SOURCES_QT))))) \
+	init.qt.cpp wallet.qt.cpp \
+	build.h
+else
+generated_files: force \
+	build.h
+endif
+
+clean: force
+	$(FIND) -name '*.o' -delete
+	$(FIND) -name '*.d' -delete
+	$(FIND) -name '*.qrc.cpp' -delete
+	$(FIND) -name '*.qt.cpp' -delete
+	$(FIND) qt -name '*.moc' -delete
+	$(FIND) qt -name 'ui_*.h' -delete
+
+fclean: clean
+	$(RM) -f $(TARGET_HEADLESS)
+	$(RM) -f $(TARGET_QT)
+
+re: fclean
+	$(MAKE) -f $(MAKEFILE) all
+
+.PHONY: force
